@@ -71,6 +71,15 @@ const Icon = styled(SVG)`
   }
 `;
 
-const Extensions = () => ();
+const Extensions = () => (
+<ColCenterH
+    width={1}
+    flex="0 0 auto"
+    flexWrap={["wrap", "wrap", "nowrap"]}
+    py={[64, 96]}
+    backgroundColor={Colors.ExtensionsBg}
+  >
+</ColCenterH>
+  );
 
 export default Extensions;

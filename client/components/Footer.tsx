@@ -17,7 +17,14 @@ const Footer: FC = () => {
     showRecaptcha();
   }, []);
 
-  return ();
+  return (
+  	<ColCenter
+      as="footer"
+      width={1}
+      backgroundColor="white"
+      p={isAuthenticated ? 2 : 24}
+    >
+    </ColCenter>);
 };
 
 export default Footer;
