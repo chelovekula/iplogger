@@ -1,0 +1,76 @@
+import React from "react";
+import styled from "styled-components";
+import { Flex } from "reflexbox/styled-components";
+import SVG from "react-inlinesvg"; // TODO: another solution
+import { Colors } from "../consts";
+import { ColCenterH } from "./Layout";
+import { H3 } from "./Text";
+
+const Button = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 16px;
+  padding: 12px 28px;
+  font-family: "Nunito", sans-serif;
+  background-color: #eee;
+  border: 1px solid #aaa;
+  font-size: 14px;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 4px;
+  outline: none;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease-out;
+  cursor: pointer;
+
+  @media only screen and (max-width: 768px) {
+    margin-bottom: 16px;
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  > * {
+    text-decoration: none;
+  }
+
+  :hover {
+    transform: translateY(-2px);
+  }
+`;
+
+const FirefoxButton = styled(Button)`
+  color: #e0890f;
+`;
+
+const ChromeButton = styled(Button)`
+  color: #4285f4;
+`;
+
+const Link = styled.a`
+  text-decoration: none;
+
+  :visited,
+  :hover,
+  :active,
+  :focus {
+    text-decoration: none;
+  }
+`;
+
+const Icon = styled(SVG)`
+  width: 18px;
+  height: 18px;
+  margin-right: 16px;
+  fill: ${props => props.color || "#333"};
+
+  @media only screen and (max-width: 768px) {
+    width: 13px;
+    height: 13px;
+    margin-right: 10px;
+  }
+`;
+
+const Extensions = () => ();
+
+export default Extensions;
