@@ -1,0 +1,27 @@
+version: '2'
+
+services:
+  postgres:
+    container_name: 'postgres'
+    image: 'library/postgres:9.6.19'
+    ports:
+      - '127.0.0.1:5432:5432'
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - ./postgres_data:/var/lib/postgresql
+
+  redis:
+    container_name: 'redis'
+    image: 'redis:3.2.0'
+    ports:
+      - '127.0.0.1:6379:6379'
+    volumes:
+      - 'redisdata:/data'
+
+volumes:
+  pgdata:
+  redisdata:
