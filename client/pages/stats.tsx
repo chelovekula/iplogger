@@ -19,6 +19,7 @@ import ALink from "../components/ALink";
 import Icon from "../components/Icon";
 import StatsSummaryPage from "./stats_summary";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import StatsVisitsPage from "./stats_visits";
 
 
 interface Props {
@@ -39,7 +40,7 @@ const StatsPage: NextPage<Props> = ({ id }) => {
           <StatsSummaryPage id={id}></StatsSummaryPage>
         </TabPanel>
         <TabPanel>
-          <h2>Any content 2</h2>
+          <StatsVisitsPage id={id}></StatsVisitsPage>
         </TabPanel>
         <TabPanel>
           <h2>Any content 3</h2>
