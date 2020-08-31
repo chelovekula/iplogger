@@ -13,6 +13,7 @@ import { TokenPayload } from "../types";
 
 const isProd = process.env.NODE_ENV === "production";
 const { publicRuntimeConfig } = getConfig();
+import "react-tabs/style/react-tabs.css";
 
 // TODO: types
 class MyApp extends App<any> {
