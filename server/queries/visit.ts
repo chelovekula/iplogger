@@ -4,6 +4,7 @@ import * as utils from "../utils";
 import * as redis from "../redis";
 import knex from "../knex";
 
+
 interface Add {
   browser: string;
   country: string;
@@ -76,6 +77,48 @@ interface IGetStatsResponse {
   lastMonth: StatsResult;
   lastWeek: StatsResult;
   updatedAt: string;
+}
+
+interface IGetVisitsResponse {
+  total: number;
+  visits: Visit[];
+}
+
+export async function list(
+  match: Partial<Visit>,
+  from: Date,
+  to: Date,
+  count: number,
+  page: number,
+  visit_count: number
+) {
+  if (match.link_id) {
+    const key = redis.key.visits(match.link_id, from, to, count, page);
+    const cached = await redis.get(key);
+    if (cached) return JSON.parse(cached);
+  }
+
+  const total: any = knex<Visit>("visits")
+    .where("link_id", match.link_id)
+    .andWhere("created_at", ">", from)
+    .andWhere("created_at", "<", to)
+    .count();
+  const pages = Math.round(total / count);
+
+  return knex<Visit>("visits")
+    .where("link_id", match.link_id)
+    .andWhere("created_at", ">=", from)
+    .andWhere("created_at", "<=", to)
+    .orderBy("created_at", "DESC")
+    .offset(page * count)
+    .limit(count)
+    .then((visits) => {
+      const response: IGetVisitsResponse = {
+        visits: visits,
+        total: pages
+      };
+      return response;
+    });
 }
 
 export const find = async (match: Partial<Visit>, total: number) => {

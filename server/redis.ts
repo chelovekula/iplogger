@@ -29,6 +29,13 @@ export const key = {
     `${address}-${domain_id || ""}-${user_id || ""}`,
   domain: (address: string) => `d-${address}`,
   stats: (link_id: number) => `s-${link_id}`,
+  visits: (
+    link_id: number,
+    from: Date,
+    to: Date,
+    number: number,
+    page: number
+  ) => `v-${link_id}-${from}-${to}-${number}-${page}`,
   host: (address: string) => `h-${address}`,
   user: (emailOrKey: string) => `u-${emailOrKey}`
 };

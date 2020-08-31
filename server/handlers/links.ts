@@ -60,17 +60,17 @@ export const create: Handler = async (req: CreateLinkReq, res) => {
     validators.malware(req.user, target),
     validators.linksCount(req.user),
     reuse &&
-      query.link.find({
-        target,
-        user_id: req.user.id,
-        domain_id
-      }),
+    query.link.find({
+      target,
+      user_id: req.user.id,
+      domain_id
+    }),
     customurl &&
-      query.link.find({
-        address: customurl,
-        user_id: req.user.id,
-        domain_id
-      }),
+    query.link.find({
+      address: customurl,
+      user_id: req.user.id,
+      domain_id
+    }),
     !customurl && utils.generateId(domain_id),
     validators.bannedDomain(targetDomain),
     validators.bannedHost(targetDomain)
@@ -131,11 +131,11 @@ export const edit: Handler = async (req, res) => {
     validators.cooldown(req.user),
     validators.malware(req.user, target),
     address !== link.address &&
-      query.link.find({
-        address,
-        user_id: req.user.id,
-        domain_id
-      }),
+    query.link.find({
+      address,
+      user_id: req.user.id,
+      domain_id
+    }),
     validators.bannedDomain(targetDomain),
     validators.bannedHost(targetDomain)
   ]);
@@ -419,6 +419,50 @@ export const stats: Handler = async (req, res) => {
 
   return res.status(200).send({
     ...stats,
+    ...utils.sanitize.link(link)
+  });
+};
+
+export const visits: Handler = async (req, res) => {
+  const { user } = req;
+  const uuid = req.params.id;
+
+  const link = await query.link.find({
+    ...(!user.admin && { user_id: user.id }),
+    uuid
+  });
+
+  if (!link) {
+    throw new CustomError("Link could not be found.");
+  }
+  let from = req.query.from;
+  if (!from) {
+    from = new Date();
+    from.setHours(0, 0, 0, 0);
+  }
+
+  let to = req.query.to;
+  if (!to) {
+    to = new Date();
+    to.setHours(23, 59, 59, 999);
+  }
+  let count = req.query.count;
+  if (!count) {
+    count = 20;
+  }
+  let page = req.query.page;
+  if (!page) {
+    page = 0;
+  }
+
+  const visits = await query.visit.list({ link_id: link.id }, from, to, count, page, link.visit_count);
+
+  if (!visits) {
+    throw new CustomError("Could not get the short link visits.");
+  }
+
+  return res.status(200).send({
+    ...visits,
     ...utils.sanitize.link(link)
   });
 };
