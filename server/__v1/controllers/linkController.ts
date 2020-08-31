@@ -17,7 +17,7 @@ import {
   findLink,
   getLinks,
   getStats,
-  getUserLinksCount
+  getUserLinksCount, getVisits
 } from "../db/link";
 import transporter from "../../mail/mail";
 import * as redis from "../../redis";
@@ -54,17 +54,17 @@ export const shortener: Handler = async (req, res) => {
       env.GOOGLE_SAFE_BROWSING_KEY && malwareCheck(req.user, req.body.target),
       req.user && urlCountsCheck(req.user),
       req.user &&
-        req.body.reuse &&
-        findLink({
-          target,
-          user_id: req.user.id
-        }),
+      req.body.reuse &&
+      findLink({
+        target,
+        user_id: req.user.id
+      }),
       req.user &&
-        req.body.customurl &&
-        findLink({
-          address: req.body.customurl,
-          domain_id: req.user.domain_id || null
-        }),
+      req.body.customurl &&
+      findLink({
+        address: req.body.customurl,
+        domain_id: req.user.domain_id || null
+      }),
       (!req.user || !req.body.customurl) && generateId(),
       checkBannedDomain(targetDomain),
       checkBannedHost(targetDomain)
@@ -331,6 +331,62 @@ export const getLinkStats: Handler = async (req, res) => {
   const cacheTime = getStatsCacheTime(0);
   redis.set(redisKey, JSON.stringify(stats), "EX", cacheTime);
   return res.status(200).json(stats);
+};
+
+export const getLinkVisits: Handler = async (req, res) => {
+  //@todo вынести общий с getLinkStats функционал
+  if (!req.query.id) {
+    return res.status(400).json({ error: "No id has been provided." });
+  }
+
+  const { hostname } = URL.parse(req.query.domain);
+  const hasCustomDomain = req.query.domain && hostname !== env.DEFAULT_DOMAIN;
+  const customDomain = hasCustomDomain
+    ? (await getDomain({ address: req.query.domain })) || ({ id: -1 } as Domain)
+    : ({} as Domain);
+
+  const redisKey = req.query.id + (customDomain.address || "") + req.user.email;
+  const cached = await redis.get(redisKey);
+  if (cached) return res.status(200).json(JSON.parse(cached));
+
+  const link = await findLink({
+    address: req.query.id,
+    domain_id: hasCustomDomain ? customDomain.id : null,
+    user_id: req.user && req.user.id
+  });
+
+  if (!link) {
+    return res.status(400).json({ error: "Couldn't find the short link." });
+  }
+  let from = req.query.from;
+  if (!from) {
+    from = new Date();
+    from.setHours(23, 59, 59, 999);
+  }
+
+  let to = req.query.to;
+  if (!to) {
+    to = new Date();
+    to.setHours(0, 0, 0, 0);
+  }
+  let count = req.query.count;
+  if (!count) {
+    count = 20;
+  }
+  let page = req.query.page;
+  if (!page) {
+    page = 0;
+  }
+  const visits = await getVisits(link, customDomain, from, to, page, count);
+  if (!visits) {
+    return res
+      .status(400)
+      .json({ error: "Could not get the short link stats." });
+  }
+
+  const cacheTime = getStatsCacheTime(0);
+  redis.set(redisKey, JSON.stringify(visits), "EX", cacheTime);
+  return res.status(200).json(visits);
 };
 
 export const reportLink: Handler = async (req, res) => {

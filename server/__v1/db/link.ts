@@ -20,7 +20,7 @@ interface CreateLink extends Link {
 
 export const createShortLink = async (data: CreateLink, user: UserJoined) => {
   const { id: user_id = null, domain, domain_id = null } =
-    user || ({} as UserJoined);
+  user || ({} as UserJoined);
   let password;
 
   if (data.password) {
@@ -118,11 +118,11 @@ interface IFindLink {
 }
 
 export const findLink = async ({
-  address,
-  domain_id,
-  user_id,
-  target
-}: IFindLink): Promise<Link> => {
+                                 address,
+                                 domain_id,
+                                 user_id,
+                                 target
+                               }: IFindLink): Promise<Link> => {
   const redisKey = getRedisKey.link(address, domain_id, user_id);
   const cachedLink = await redis.get(redisKey);
 
@@ -299,6 +299,11 @@ const STATS_PERIODS: [number, "lastDay" | "lastWeek" | "lastMonth"][] = [
   [30, "lastMonth"]
 ];
 
+interface IVisitsResponse {
+  data: Visit[];
+  total: number;
+}
+
 interface IGetStatsResponse {
   allTime: StatsResult;
   id: string;
@@ -466,6 +471,29 @@ export const getStats = async (link: Link, domain: Domain) => {
     target: link.target,
     total: link.visit_count,
     updatedAt: new Date().toISOString()
+  };
+  return response;
+};
+
+export const getVisits = async (link: Link, domain: Domain, from: any, to: any, page: any, count: any) => {
+  const total: any = knex<Visit>("visits")
+    .where("link_id", link.id)
+    .andWhere("created_at", ">", from)
+    .andWhere("created_at", "<", to)
+    .count();
+  const pages = Math.round(total / count);
+
+  const visits: any = knex<Visit>("visits")
+    .where("link_id", link.id)
+    .andWhere("created_at", ">", from)
+    .andWhere("created_at", "<", to)
+    .orderBy("created_at", "DESC")
+    .offset(page * count)
+    .limit(count)
+    .stream();
+  const response: IVisitsResponse = {
+    data: visits,
+    total: pages
   };
   return response;
 };

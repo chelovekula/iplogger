@@ -50,6 +50,12 @@ router.get(
   asyncHandler(auth.jwt),
   asyncHandler(link.getLinkStats)
 );
+router.get(
+  "/url/visits",
+  asyncHandler(auth.apikey),
+  asyncHandler(auth.jwt),
+  asyncHandler(link.getLinkVisits)
+);
 router.post("/url/requesturl", asyncHandler(link.goToLink));
 router.post("/url/report", asyncHandler(link.reportLink));
 router.post(
